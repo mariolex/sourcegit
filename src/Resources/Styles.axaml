@@ -157,16 +157,16 @@
     </Setter>
   </Style>
 
-  <Style Selector="Window.custom_window_frame[WindowState=Maximized]">
+  <Style Selector="Window.custom_window_frame[WindowState=Maximized], Window.custom_window_frame[WindowState=FullScreen]">
     <Setter Property="Padding" Value="0"/>
     <Setter Property="CornerRadius" Value="0"/>
   </Style>
 
-  <Style Selector="Window.custom_window_frame[WindowState=Maximized] /template/ Border#PART_ContentRoot">
+  <Style Selector="Window.custom_window_frame[WindowState=Maximized] /template/ Border#PART_ContentRoot, Window.custom_window_frame[WindowState=FullScreen] /template/ Border#PART_ContentRoot">
     <Setter Property="BorderThickness" Value="0"/>
   </Style>
 
-  <Style Selector="Window.custom_window_frame[WindowState=Maximized] /template/ Border.resize_border">
+  <Style Selector="Window.custom_window_frame[WindowState=Maximized] /template/ Border.resize_border, Window.custom_window_frame[WindowState=FullScreen] /template/ Border.resize_border">
     <Setter Property="IsVisible" Value="False"/>
     <Setter Property="IsHitTestVisible" Value="False"/>
   </Style>

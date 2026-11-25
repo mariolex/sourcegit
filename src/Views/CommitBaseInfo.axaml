@@ -127,7 +127,7 @@
 
                   <TextBlock.DataTemplates>
                     <DataTemplate DataType="m:Commit">
-                      <StackPanel MinWidth="400" Orientation="Vertical">
+                      <StackPanel MinWidth="200" Orientation="Vertical">
                         <Grid ColumnDefinitions="Auto,*,Auto">
                           <v:Avatar Grid.Column="0" Width="16" Height="16" VerticalAlignment="Center" IsHitTestVisible="False" User="{Binding Author}"/>
                           <TextBlock Grid.Column="1" Text="{Binding Author.Name}" Margin="8,0,0,0"/>
@@ -195,7 +195,7 @@
 
             <v:CommitMessagePresenter.DataTemplates>
               <DataTemplate DataType="m:Commit">
-                <StackPanel MinWidth="400" Orientation="Vertical">
+                <StackPanel MinWidth="200" Orientation="Vertical">
                   <Grid ColumnDefinitions="Auto,*,Auto">
                     <v:Avatar Grid.Column="0" Width="16" Height="16" VerticalAlignment="Center" IsHitTestVisible="False" User="{Binding Author}"/>
                     <TextBlock Grid.Column="1" Text="{Binding Author.Name}" Margin="8,0,0,0"/>

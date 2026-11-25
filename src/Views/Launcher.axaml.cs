@@ -32,6 +32,14 @@ namespace SourceGit.Views
             }
         }
 
+        // True when a Wayland compositor — especially a tiling one like
+        // Hyprland — manages window geometry and state itself. Transient
+        // tile sizes or maximize/fullscreen states must not be persisted,
+        // or they would corrupt the default floating window layout
+        // (1280x720, WindowState.Normal) on next startup.
+        private static bool IsCompositorManagedSession =>
+            Native.OS.IsWaylandSession || Native.OS.IsHyprlandSession;
+
         public Launcher()
         {
             if (OperatingSystem.IsMacOS())
@@ -81,6 +89,12 @@ namespace SourceGit.Views
         {
             base.OnOpened(e);
 
+            // Keep WindowState.Normal under compositor-managed sessions so a
+            // previously persisted tiling state is not restored and the
+            // compositor stays in charge of the window mode.
+            if (IsCompositorManagedSession)
+                return;
+
             var preferences = ViewModels.Preferences.Instance;
             WindowState = preferences.Layout.LauncherWindowState;
         }
@@ -95,7 +109,7 @@ namespace SourceGit.Views
                 _lastWindowState = (WindowState)change.OldValue!;
 
                 if (!OperatingSystem.IsMacOS() && !UseSystemWindowFrame)
-                    CaptionHeight = new GridLength(state == WindowState.Maximized ? 30 : 38);
+                    CaptionHeight = new GridLength(state is WindowState.Maximized or WindowState.FullScreen ? 30 : 38);
 
                 ViewModels.Preferences.Instance.Layout.LauncherWindowState = state;
             }
@@ -118,7 +132,7 @@ namespace SourceGit.Views
         {
             base.OnSizeChanged(e);
 
-            if (WindowState == WindowState.Normal)
+            if (WindowState == WindowState.Normal && !IsCompositorManagedSession)
             {
                 var layout = ViewModels.Preferences.Instance.Layout;
                 layout.LauncherWidth = Width;

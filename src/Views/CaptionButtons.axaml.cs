@@ -17,6 +17,12 @@ namespace SourceGit.Views
 
         public CaptionButtons()
         {
+            // Under Hyprland the compositor owns window placement (tiled/
+            // floating/fullscreen), so minimize/maximize would only fight
+            // it. Hide both and keep the Close button only.
+            if (Native.OS.IsHyprlandSession)
+                IsCloseButtonOnly = true;
+
             InitializeComponent();
         }
 

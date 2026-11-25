@@ -10,9 +10,9 @@
              x:DataType="vm:WorkingCopy">
   <Grid SizeChanged="OnMainLayoutSizeChanged" Background="{DynamicResource Brush.SubPanel}">
     <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="{Binding Source={x:Static vm:Preferences.Instance}, Path=Layout.WorkingCopyLeftWidth, Mode=TwoWay}" MinWidth="300"/>
+      <ColumnDefinition Width="{Binding Source={x:Static vm:Preferences.Instance}, Path=Layout.WorkingCopyLeftWidth, Mode=TwoWay}" MinWidth="180"/>
       <ColumnDefinition Width="4"/>
-      <ColumnDefinition Width="*" MinWidth="470"/>
+      <ColumnDefinition Width="*" MinWidth="240"/>
     </Grid.ColumnDefinitions>
 
     <!-- Left -->

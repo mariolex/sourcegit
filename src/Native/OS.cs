@@ -146,6 +146,15 @@ namespace SourceGit.Native
             get;
         } = OperatingSystem.IsLinux() && Linux.IsWayland;
 
+        // True when the session is managed by the Hyprland tiling compositor
+        // (see Linux.IsHyprland). It fully owns window placement and state
+        // (tiled/floating/fullscreen), so windows must not offer client-side
+        // minimize/maximize controls that would fight the compositor.
+        public static bool IsHyprlandSession
+        {
+            get;
+        } = OperatingSystem.IsLinux() && Linux.IsHyprland;
+
         public static IKeychain Keychain
         {
             get;

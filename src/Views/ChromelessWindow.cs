@@ -40,10 +40,16 @@ namespace SourceGit.Views
 
         public void MaximizeOrRestoreWindow(object _, TappedEventArgs e)
         {
-            if (WindowState == WindowState.Maximized)
-                WindowState = WindowState.Normal;
-            else
-                WindowState = WindowState.Maximized;
+            // Under Hyprland the compositor owns the window state (tiled/
+            // floating/fullscreen), so the titlebar double-click must not
+            // fight it with a client-side maximize.
+            if (!Native.OS.IsHyprlandSession)
+            {
+                if (WindowState == WindowState.Maximized)
+                    WindowState = WindowState.Normal;
+                else
+                    WindowState = WindowState.Maximized;
+            }
 
             e.Handled = true;
         }
