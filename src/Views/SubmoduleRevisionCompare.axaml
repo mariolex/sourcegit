@@ -11,7 +11,7 @@
                     x:Name="ThisControl"
                     Icon="/App.ico"
                     Title="{DynamicResource Text.SubmoduleRevisionCompare}"
-                    MinWidth="1280" MinHeight="720">
+                    MinWidth="720" MinHeight="480">
   <Grid RowDefinitions="Auto,64,*">
     <!-- TitleBar -->
     <Grid Grid.Row="0" Height="28" IsVisible="{Binding !#ThisControl.UseSystemWindowFrame}">

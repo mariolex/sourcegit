@@ -66,6 +66,7 @@ namespace SourceGit.Models
                     new ShellOrTerminal("ptyxis", "Ptyxis", "ptyxis", "--new-window --working-directory=."),
                     new ShellOrTerminal("ghostty", "Ghostty", "ghostty"),
                     new ShellOrTerminal("kitty", "kitty", "kitty"),
+                    new ShellOrTerminal("alacritty-term", "Alacritty", "alacritty"),
                     new ShellOrTerminal("custom", "Custom", ""),
                 };
             }

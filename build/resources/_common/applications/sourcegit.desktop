@@ -6,4 +6,5 @@ Icon=/usr/share/icons/sourcegit.png
 Terminal=false
 Type=Application
 Categories=Development
+StartupWMClass=SourceGit
 MimeType=inode/directory;

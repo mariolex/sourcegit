@@ -167,6 +167,9 @@ namespace SourceGit
             {
                 Models.CommitGraph.SetDefaultPens();
             }
+
+            // (Re)install the live-reload watcher for the overrides file.
+            app.WatchThemeOverridesFile(themeOverridesFile);
         }
 
         public static void SetFonts(string defaultFont, string monospaceFont)
@@ -533,6 +536,80 @@ namespace SourceGit
         }
         #endregion
 
+        #region Theme Overrides Live Reload
+        // Watches the theme overrides JSON file so changes (e.g. made by
+        // Omarchy tooling or by hand) are applied live, without restarting.
+        private void WatchThemeOverridesFile(string file)
+        {
+            // Dispose the previous watcher (if any) first.
+            if (_themeOverridesWatcher != null)
+            {
+                _themeOverridesWatcher.EnableRaisingEvents = false;
+                _themeOverridesWatcher.Changed -= OnThemeOverridesFileChanged;
+                _themeOverridesWatcher.Created -= OnThemeOverridesFileChanged;
+                _themeOverridesWatcher.Deleted -= OnThemeOverridesFileChanged;
+                _themeOverridesWatcher.Renamed -= OnThemeOverridesFileChanged;
+                _themeOverridesWatcher.Dispose();
+                _themeOverridesWatcher = null;
+            }
+
+            if (string.IsNullOrEmpty(file))
+                return;
+
+            var dir = Path.GetDirectoryName(file);
+            if (string.IsNullOrEmpty(dir) || !Directory.Exists(dir))
+                return;
+
+            try
+            {
+                var watcher = new FileSystemWatcher
+                {
+                    Path = dir,
+                    Filter = Path.GetFileName(file),
+                    NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.CreationTime,
+                    EnableRaisingEvents = true,
+                };
+                watcher.Changed += OnThemeOverridesFileChanged;
+                watcher.Created += OnThemeOverridesFileChanged;
+                watcher.Deleted += OnThemeOverridesFileChanged;
+                watcher.Renamed += OnThemeOverridesFileChanged;
+                _themeOverridesWatcher = watcher;
+            }
+            catch
+            {
+                // The watcher is a pure convenience feature, ignore setup failures.
+            }
+        }
+
+        private void OnThemeOverridesFileChanged(object sender, FileSystemEventArgs e)
+        {
+            // FileSystemWatcher raises events on a background thread.
+            Dispatcher.UIThread.Post(DebounceThemeOverridesReload);
+        }
+
+        private void DebounceThemeOverridesReload()
+        {
+            if (_themeOverridesReloadTimer == null)
+            {
+                _themeOverridesReloadTimer = new DispatcherTimer
+                {
+                    Interval = TimeSpan.FromMilliseconds(300),
+                };
+                _themeOverridesReloadTimer.Tick += (_, _) =>
+                {
+                    _themeOverridesReloadTimer.Stop();
+                    var pref = ViewModels.Preferences.Instance;
+                    SetTheme(pref.Theme, pref.ThemeOverrides);
+                };
+            }
+
+            // Restarting the timer coalesces the burst of events a single
+            // save usually produces into one reload.
+            _themeOverridesReloadTimer.Stop();
+            _themeOverridesReloadTimer.Start();
+        }
+        #endregion
+
         #region Check for Updates
         private void Check4Update(bool manually = false)
         {
@@ -601,5 +678,7 @@ namespace SourceGit
         private ResourceDictionary _activeLocale = null;
         private ResourceDictionary _themeOverrides = null;
         private ResourceDictionary _fontsOverrides = null;
+        private FileSystemWatcher _themeOverridesWatcher = null;
+        private DispatcherTimer _themeOverridesReloadTimer = null;
     }
 }

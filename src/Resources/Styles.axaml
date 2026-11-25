@@ -176,6 +176,26 @@
     <Setter Property="IsHitTestVisible" Value="False"/>
   </Style>
 
+  <!-- Tiling Wayland compositors (e.g. Hyprland) draw window borders, corner
+       radius, gaps and shadows themselves. Collapse the client-side
+       decorations (transparent shadow padding, app-drawn border and resize
+       hit-test borders) so the content fills the tile exactly and the
+       compositor stays in charge of the window frame. -->
+  <Style Selector="Window.custom_window_frame.tiling">
+    <Setter Property="Padding" Value="0"/>
+    <Setter Property="CornerRadius" Value="0"/>
+  </Style>
+
+  <Style Selector="Window.custom_window_frame.tiling /template/ Border#PART_ContentRoot">
+    <Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="CornerRadius" Value="0"/>
+  </Style>
+
+  <Style Selector="Window.custom_window_frame.tiling /template/ Border.resize_border">
+    <Setter Property="IsVisible" Value="False"/>
+    <Setter Property="IsHitTestVisible" Value="False"/>
+  </Style>
+
   <Style Selector="PopupRoot">
     <Setter Property="TextElement.FontFamily" Value="{DynamicResource Fonts.Default}"/>
     <Setter Property="TextElement.FontSize" Value="{Binding Source={x:Static vm:Preferences.Instance}, Path=DefaultFontSize}"/>

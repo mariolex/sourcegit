@@ -1,0 +1,103 @@
+# Maintainer: mariolex <https://github.com/mariolex>
+#
+# SourceGit packaged for Arch Linux / Omarchy.
+#
+# Notes:
+# * Release builds are AOT-compiled (PublishAot=true is the default for Release
+#   in src/SourceGit.csproj), so the installed binary is fully self-contained
+#   native code with no .NET runtime dependency.
+# * In-app update detection is disabled at build time via
+#   -p:DisableUpdateDetection=true — updates are handled by pacman instead.
+# * Window frames cooperate with tiling Wayland compositors (Hyprland) and the
+#   .desktop file carries StartupWMClass=SourceGit so launchers and window
+#   rules match the app correctly.
+
+pkgname=sourcegit
+pkgver=2026.24
+pkgrel=1
+pkgdesc="Open-source & free Git GUI client (Hyprland/Omarchy friendly build)"
+arch=('x86_64' 'aarch64')
+url="https://github.com/mariolex/sourcegit"
+license=('MIT')
+
+depends=(
+  'git'
+  'xdg-utils'
+  'fontconfig'
+  'freetype2'
+  'hicolor-icon-theme'
+  'icu'
+  'libice'
+  'libsm'
+  'libx11'
+  'libxkbcommon'
+  'libxkbcommon-x11'
+)
+makedepends=(
+  'clang>=12'
+  'dotnet-sdk>=10'
+  'zlib'
+  'git'
+)
+
+# Git reference to build from. Point this at any tag, branch or commit of the
+# fork, e.g. "feat/omarchy-hyprland" or "v2026.24". Note that the reference
+# must exist on the remote (git push origin feat/omarchy-hyprland) for makepkg
+# to be able to fetch it.
+_ref="feat/omarchy-hyprland"
+
+source=("${pkgname}::git+${url}.git#branch=${_ref}")
+sha256sums=('SKIP')
+
+build() {
+  cd "${srcdir}/${pkgname}"
+
+  export DOTNET_CLI_TELEMETRY_OPTOUT=1
+  export DOTNET_NOLOGO=1
+  export DOTNET_CLI_HOME="${srcdir}/dotnet-home"
+  export NUGET_PACKAGES="${srcdir}/nuget-packages"
+  export PATH="${srcdir}/dotnet-home:${PATH}"
+
+  local rid
+  case "${CARCH}" in
+    x86_64) rid=linux-x64 ;;
+    aarch64) rid=linux-arm64 ;;
+    *) error "unsupported architecture: ${CARCH}"; return 1 ;;
+  esac
+
+  dotnet publish src/SourceGit.csproj \
+    -c Release \
+    -r "${rid}" \
+    --self-contained true \
+    -p:DisableUpdateDetection=true \
+    -o "${srcdir}/publish"
+
+  # The AOT executable is emitted with the assembly name; give it the
+  # lowercase name users (and the .desktop file) expect.
+  mv "${srcdir}/publish/SourceGit" "${srcdir}/publish/sourcegit"
+}
+
+package() {
+  cd "${srcdir}/${pkgname}"
+
+  # Drop debug symbols, they are not needed at runtime (cf. deb/rpm packaging).
+  rm -f "${srcdir}/publish/"*.dbg "${srcdir}/publish/"*.pdb
+
+  install -dm755 "${pkgdir}/usr/lib/sourcegit"
+  cp -a "${srcdir}/publish/." "${pkgdir}/usr/lib/sourcegit/"
+  chmod 755 "${pkgdir}/usr/lib/sourcegit/sourcegit"
+
+  install -dm755 "${pkgdir}/usr/bin"
+  ln -s /usr/lib/sourcegit/sourcegit "${pkgdir}/usr/bin/sourcegit"
+
+  install -dm755 "${pkgdir}/usr/share/applications"
+  sed -e 's|^Exec=/opt/sourcegit/sourcegit|Exec=/usr/bin/sourcegit|' \
+      -e 's|^Icon=/usr/share/icons/sourcegit.png|Icon=sourcegit|' \
+      build/resources/_common/applications/sourcegit.desktop \
+      > "${pkgdir}/usr/share/applications/sourcegit.desktop"
+
+  install -Dm644 build/resources/_common/icons/sourcegit.png \
+    "${pkgdir}/usr/share/icons/hicolor/256x256/apps/sourcegit.png"
+
+  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/sourcegit/LICENSE"
+}

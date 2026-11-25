@@ -76,6 +76,15 @@ namespace SourceGit.Views
                 var owner = TopLevel.GetTopLevel(control) as Window;
                 if (owner != null)
                 {
+                    // On Wayland the compositor decides where new windows
+                    // appear, so asking for a manual position would only
+                    // fight against it (especially on tiling WMs).
+                    if (Native.OS.IsWaylandSession)
+                    {
+                        window.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                        break;
+                    }
+
                     // Get the screen where current window locates.
                     var screen = owner.Screens.ScreenFromWindow(owner) ?? owner.Screens.Primary;
                     if (screen == null)

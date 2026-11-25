@@ -138,6 +138,14 @@ namespace SourceGit.Native
             set => _enableSystemWindowFrame = value;
         }
 
+        // True when the process runs inside a Wayland session (including via
+        // XWayland). Wayland compositors own window placement, so manual
+        // position handling must be avoided (see Linux.IsWayland).
+        public static bool IsWaylandSession
+        {
+            get;
+        } = OperatingSystem.IsLinux() && Linux.IsWayland;
+
         public static IKeychain Keychain
         {
             get;

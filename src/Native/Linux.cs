@@ -17,9 +17,29 @@ namespace SourceGit.Native
         [DllImport("libc", SetLastError = true)]
         private static extern int kill(int pid, int sig);
 
+        // NOTE: Avalonia 11.3 has no native Wayland backend, so the app always
+        // runs through XWayland on Wayland sessions. The environment variables
+        // still tell us which kind of session/compositor we live in.
+        public static bool IsWayland
+        {
+            get => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WAYLAND_DISPLAY"));
+        }
+
+        public static bool IsHyprland
+        {
+            get => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("HYPRLAND_INSTANCE_SIGNATURE"));
+        }
+
         public void SetupApp(AppBuilder builder)
         {
-            builder.With(new X11PlatformOptions() { EnableIme = true });
+            // Set a stable WM_CLASS so compositors and the .desktop file
+            // (StartupWMClass) can identify/match our windows, e.g. for
+            // Hyprland window rules or taskbar grouping.
+            builder.With(new X11PlatformOptions()
+            {
+                EnableIme = true,
+                WmClass = "SourceGit",
+            });
         }
 
         public void SetupWindow(Window window)
@@ -36,6 +56,13 @@ namespace SourceGit.Native
                 window.ExtendClientAreaChromeHints = ExtendClientAreaChromeHints.NoChrome;
                 window.ExtendClientAreaToDecorationsHint = true;
                 window.Classes.Add("custom_window_frame");
+
+                // Tiling Wayland compositors (Hyprland) draw window borders,
+                // corner radius, gaps and shadows themselves. Flag the window
+                // so styles can collapse the client-side decorations that
+                // would fight the compositor.
+                if (IsHyprland)
+                    window.Classes.Add("tiling");
             }
         }
 

@@ -50,7 +50,7 @@ namespace SourceGit.Views
 
             var x = layout.LauncherPositionX;
             var y = layout.LauncherPositionY;
-            if (x != int.MinValue && y != int.MinValue && Screens is { } screens)
+            if (!Native.OS.IsWaylandSession && x != int.MinValue && y != int.MinValue && Screens is { } screens)
             {
                 var position = new PixelPoint(x, y);
                 var size = new PixelSize((int)layout.LauncherWidth, (int)layout.LauncherHeight);
@@ -351,7 +351,10 @@ namespace SourceGit.Views
 
         private void OnPositionChanged(object sender, PixelPointEventArgs e)
         {
-            if (WindowState == WindowState.Normal)
+            // Wayland compositors decide the window position themselves
+            // (tiling WMs like Hyprland even report synthetic positions),
+            // so there is nothing sane to persist/restore here.
+            if (WindowState == WindowState.Normal && !Native.OS.IsWaylandSession)
             {
                 var layout = ViewModels.Preferences.Instance.Layout;
                 layout.LauncherPositionX = Position.X;

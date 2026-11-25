@@ -146,6 +146,12 @@ namespace SourceGit.Views
             if (!Classes.Contains("custom_window_frame"))
                 return;
 
+            // On Wayland the compositor (e.g. Hyprland) owns window placement
+            // and may report synthetic positions, so trying to snap the
+            // shadow padding would only fight against it.
+            if (Native.OS.IsWaylandSession)
+                return;
+
             if (WindowState != WindowState.Normal)
             {
                 // Let the "WindowState=Maximized" style take over
